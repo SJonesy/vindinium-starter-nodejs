@@ -1,3 +1,4 @@
 *.sublime-*
 *.sh
 rabbi.js
+node_modules/
