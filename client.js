@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var request   = require('request')
   , qs        = require('qs')
+  , colors    = require('colors')
   , randomBot = require('./bot');
 
 
@@ -82,6 +83,7 @@ function loop (key, state, bot, cb) {
     cb();
   } 
   else {
+    displayState(state)
     bot(state, function (dir) {
       state = move(url, key, dir, function(err, newState) {
         if (err) {
@@ -123,6 +125,36 @@ function usage () {
   console.log('Example: client.js mySecretKey training 20');
 }
 
-function board (board) {
+function displayState (state) {
+  var size  = parseInt(state.game.board.size) * 2
+    , re    = new RegExp('.{1,'+size+'}','g')
+    , tiles = state.game.board.tiles.match(re);
 
+  // CLEAR
+  process.stdout.write('\033c');
+
+  // DRAW MAP
+  tiles.forEach(function (row) {
+    row = row.match(/.{1,2}/g);
+    row.forEach(function (tile) {
+      tile = tile.split('');
+      if (tile[0] === '#') { tile = colors.green('#'); }
+      if (tile[0] === '$') { tile = colors.yellow(tile[1]); }
+      if (tile[0] === '[') { tile = colors.zebra('['); }
+      if (tile[0] === ' ') { tile = ' '; }
+      if (tile[0] === '@') {
+        if (parseInt(tile[1]) === parseInt(state.hero.id))
+          tile = colors.inverse(tile[1]);
+        else
+          tile = colors.red(tile[1]); 
+      }
+      process.stdout.write(tile);
+    });
+    process.stdout.write('\n');
+  });
+
+  // DISPLAY STATS
+  process.stdout.write('\n');
+  console.log('LIFE: ', state.hero.life);
+  console.log('GOLD: ', state.hero.gold);
 }
